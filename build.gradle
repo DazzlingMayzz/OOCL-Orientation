@@ -1,0 +1,67 @@
+buildscript {
+    repositories {
+        maven {
+            url 'https://maven.aliyun.com/nexus/content/groups/public/'
+        }
+
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+
+        mavenCentral()
+    }
+    
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.1.6.RELEASE")
+        classpath('gradle.plugin.com.palantir.gradle.docker:gradle-docker:0.13.0')
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'idea'
+apply plugin: 'org.springframework.boot'
+apply plugin: 'com.palantir.docker'
+
+group = 'com.oocl'
+version = '0.0.1-SNAPSHOT'
+
+description = """grow"""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+tasks.withType(JavaCompile) {
+	options.encoding = 'UTF-8'
+}
+
+jar {
+    baseName = 'grow-service'
+    version = "${version}"
+}
+
+docker {
+    name "${project.group}/${jar.baseName}"
+    files jar.archivePath
+    buildArgs(['JAR_FILE': "${jar.archiveName}"])
+}
+
+repositories {
+    maven {
+        url 'https://maven.aliyun.com/nexus/content/groups/public/'
+    }
+    
+    mavenCentral()
+}
+
+dependencies {
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-data-jpa', version:'2.1.6.RELEASE'
+    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version:'2.1.6.RELEASE'
+    compile group: 'org.flywaydb', name: 'flyway-core', version:'5.2.4'
+    compile group: 'org.projectlombok', name: 'lombok', version:'1.18.8'
+    runtime group: 'org.springframework.boot', name: 'spring-boot-devtools', version:'2.1.6.RELEASE'
+    runtime(group: 'mysql', name: 'mysql-connector-java', version:'8.0.16') {
+exclude(module: 'protobuf-java')
+    }
+    testCompile group: 'org.springframework.boot', name: 'spring-boot-starter-test', version:'2.1.6.RELEASE'
+    testCompile group: 'com.h2database', name: 'h2', version:'1.4.194'
+    testCompile group: 'org.junit.jupiter', name: 'junit-jupiter-api', version:'5.3.2'
+}

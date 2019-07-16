@@ -1,0 +1,36 @@
+node{
+    properties([pipelineTriggers([githubPush()])])
+
+    step([$class: 'WsCleanup'])
+
+    stage('Checkout') {
+        checkout(
+            $class: 'GitSCM',
+            branches: [[name: '*/aliyun']],
+            doGenerateSubmoduleConfigurations: false,
+            extensions: [
+                [$class: 'CloneOption', depth: 1, noTags: true, reference: '', shallow: true]
+            ],
+            submoduleCfg: [],
+            userRemoteConfigs: [[url: 'https://code.aliyun.com/oocl-training/grow-service.git']]
+        )
+    }
+
+    stage('Build') {
+        sh './gradlew build -x test'
+    }
+
+    withEnv(['IMAGE_REGISTRY=registry-vpc.cn-shenzhen.aliyuncs.com/agile-training',
+                 'IMAGE_REPO=grow-service']) {
+
+        stage('GenImage') {
+            sh 'bash ./ci/genImage.sh'
+        }
+
+        stage('Deploy') {
+            withCredentials([file(credentialsId: 'kube-config', variable: 'KUBE_CONFIG_FILE')]) {
+                sh 'bash ./ci/deploy.sh'
+            }
+        }
+    }
+}
