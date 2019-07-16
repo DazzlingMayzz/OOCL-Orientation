@@ -3,6 +3,7 @@ package com.oocl.grow.integration;
 import com.oocl.grow.GrowApplication;
 import com.oocl.grow.model.Todo;
 import com.oocl.grow.repository.TodoRepository;
+import lombok.Builder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,7 +36,7 @@ public class TodosApiTest {
     @Test
     public void givenTodos_whenGetTodos_thenStatus200()
             throws Exception {
-        ArrayList<Todo> todos = new ArrayList<Todo>();
+        ArrayList<Todo> todos = new ArrayList<>();
 
         todos.add(new Todo("learn TDD", false));
         todos.add(new Todo("drink coffee", false));
@@ -47,6 +48,6 @@ public class TodosApiTest {
                 .andExpect(status().isOk())
                 .andExpect(content()
                         .contentTypeCompatibleWith(MediaType.APPLICATION_JSON))
-                .andExpect(jsonPath("$", hasSize(2)));
+                .andExpect(jsonPath("$[0].title", is("123")));
     }
 }
